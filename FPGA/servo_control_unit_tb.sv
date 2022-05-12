@@ -1,9 +1,9 @@
-// version 1.1    12/05/22
-
 module servo_control_unit_tb;
-initial begin
+
 //Set initial variables for servo_control_unit.sv
-logic Direction, brake, resetOut;
+logic Direction;
+logic brake;
+logic resetOut;
 logic [7:0] pwmDT;
 logic [7:0] pwmPeriod;
 logic [31:0] statusR;
@@ -11,9 +11,13 @@ logic [31:0] inputR;
 logic [11:0] atuAngle;
 
 //Initialize servo_control_unit.sv
-scu u1(Direction,brake,resetOut,pwmDT,pwmPeriod,statusR,inputR,atuAngle);
 
-//inputR = 
+scu u1(Direction, brake, resetOut, pwmDT,pwmPeriod,statusR,inputR,atuAngle);
+initial begin
+inputR = 32'b10000000000011001000000000011100;
+atuAngle = 576;	
+
+#300 atuAngle = 12'b000000011100;
 //////////////////////////////////////////////////////////////////////////////
 //TEST 1 - Possile to set desired angle
 
@@ -55,4 +59,6 @@ scu u1(Direction,brake,resetOut,pwmDT,pwmPeriod,statusR,inputR,atuAngle);
 
 
 end
-end module
+endmodule
+
+

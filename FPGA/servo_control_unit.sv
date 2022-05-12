@@ -66,41 +66,49 @@ always_latch begin
 //		decodedDesiredAngle = decodedDesiredAngle + (idx*desiredAngle[n]);
 //	end
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//Direction Selector
-	if(desiredAngle < atuAngle)begin
-		clockDiff = 12'b101101000000 - atuAngle + desiredAngle;
-		antiClockDiff = atuAngle - desiredAngle;
-	end
-	else if(desiredAngle > atuAngle)begin
-		clockDiff = desiredAngle - atuAngle;
-		antiClockDiff = atuAngle + 12'b101101000000 - desiredAngle;
-	end
-	
-	if (clockDiff <= antiClockDiff)begin
-		Direction = 1;
-		error = clockDiff;
-	end
-	else if(antiClockDiff < clockDiff)begin
-		Direction = 0;
-		error = antiClockDiff;
-	end
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//Bang bang control
-	if (controlMode == 0)begin
-		if (desiredAngle != atuAngle)begin		//MOTOR ON WHEN ANGLE IS NOT CORRECT
-			pwmDT = pwmPeriod;
+	if(command == 1)
+		resetOut = 1;
+	else if((command == 2)||(command == 3))//No command Defaults to brake
+		brake = 1;
+	else if(command ==0)begin
+		//Clear previous commands
+		resetOut = 0;
+		brake = 0;
+		//Direction Selector
+		if(desiredAngle < atuAngle)begin
+			clockDiff = 1006 - atuAngle + desiredAngle;
+			antiClockDiff = atuAngle - desiredAngle;
 		end
-		else if (desiredAngle == atuAngle)begin	//MOTOR OFF WHEN ANGLE IS CORRECT
-			pwmDT = 8'b00000000;
+		else if(desiredAngle > atuAngle)begin
+			clockDiff = desiredAngle - atuAngle;
+			antiClockDiff = atuAngle + 1006 - desiredAngle;
 		end
+		
+		if (clockDiff <= antiClockDiff)begin
+			Direction = 1;
+			error = clockDiff;
+		end
+		else if(antiClockDiff < clockDiff)begin
+			Direction = 0;
+			error = antiClockDiff;
+		end
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//Bang bang control
+		if (controlMode == 0)begin
+			if (desiredAngle != atuAngle)begin		//MOTOR ON WHEN ANGLE IS NOT CORRECT
+				pwmDT = pwmPeriod;
+			end
+			else if (desiredAngle == atuAngle)begin	//MOTOR OFF WHEN ANGLE IS CORRECT
+				pwmDT = 8'b00000000;
+			end
+		end
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//proportional control
+		if (controlMode == 1)begin
+		dutyCyclePercentage = 1006/error;
+		pwmDT = pwmPeriod / dutyCyclePercentage;//rounded to nearest 20ns for clock_50
+		end
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	end
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//proportional control
-	if (controlMode == 1)begin
-	dutyCyclePercentage = 12'b101101000000/error;
-	pwmDT = pwmPeriod / dutyCyclePercentage;//rounded to nearest 20ns for clock_50
-	end
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 end
 endmodule 

@@ -14,7 +14,7 @@
 //		: Drake Circus, Plymouth PL4 8AA
 //		: james.davis-11@students.plymouth.ac.uk
 //		:
-// Revision	: Version 1.3 07/05/22
+// Revision	: Version 1.3 09/03/22
 //////////////////////////////////////////////////////////////////
 
 module pwmc(output logic motor_1, motor_2,
