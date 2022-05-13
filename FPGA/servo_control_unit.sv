@@ -34,12 +34,14 @@ reg [1:0] command;
 int pwmPower;
 
 //Direction Selector Variables
-reg [11:0] clockDiff;
-reg [11:0] antiClockDiff;
+reg [11:0] clockDiff;		//Difference between desired angle and current angle in clockwise direction
+reg [11:0] antiClockDiff;	//Difference between desired angle and current angle in anticlockwise direction
+reg [11:0] angleDiff;		//Signed difference between desired angle and current angle
 
 //Proportional Controller Variables
 reg [11:0] error;
 reg [11:0] dutyCyclePercentage;
+int remainder;
 
 //INPUT REGISTER
 always_comb begin
@@ -74,25 +76,26 @@ always_latch begin
 		//Clear previous commands
 		resetOut = 0;
 		brake = 0;
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//Direction Selector
-		if(desiredAngle < atuAngle)begin
-			clockDiff = 1006 - atuAngle + desiredAngle;
-			antiClockDiff = atuAngle - desiredAngle;
+		angleDiff = desiredAngle - atuAngle;
+		if(angleDiff[11] == 0)begin
+			clockDiff = angleDiff;
+			antiClockDiff = 1006-angleDiff;
 		end
-		else if(desiredAngle > atuAngle)begin
-			clockDiff = desiredAngle - atuAngle;
-			antiClockDiff = atuAngle + 1006 - desiredAngle;
+		else if(angleDiff[11] == 1)begin
+			antiClockDiff = -angleDiff;
+			clockDiff = 1006+angleDiff;
 		end
-		
-		if (clockDiff <= antiClockDiff)begin
+		if(clockDiff<=antiClockDiff)begin
 			Direction = 1;
 			error = clockDiff;
 		end
 		else if(antiClockDiff < clockDiff)begin
-			Direction = 0;
+			Direction =0;
 			error = antiClockDiff;
 		end
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//Bang bang control
 		if (controlMode == 0)begin
 			if (desiredAngle != atuAngle)begin		//MOTOR ON WHEN ANGLE IS NOT CORRECT
@@ -105,8 +108,18 @@ always_latch begin
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//proportional control
 		if (controlMode == 1)begin
-		dutyCyclePercentage = 1006/error;
-		pwmDT = pwmPeriod / dutyCyclePercentage;//rounded to nearest 20ns for clock_50
+			dutyCyclePercentage = 1006/error;
+			if((1006-(dutyCyclePercentage*error)) >= (error/2))		//Rounded division
+				dutyCyclePercentage = dutyCyclePercentage+1;
+
+			pwmDT = pwmPeriod/dutyCyclePercentage;				//pwmDT rounded to nearest 20ns
+			if((pwmPeriod-(pwmDT*dutyCyclePercentage))>=(dutyCyclePercentage/2))
+				pwmDT = pwmDT + 1;
+		
+//		dutyCyclePercentage = 1006/error;
+//		pwmDT = pwmPeriod/dutyCyclePercentage;
+//		dutyCyclePercentage = 1006/error;
+//		pwmDT = pwmPeriod / dutyCyclePercentage;//rounded to nearest 20ns for clock_50
 		end
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	end

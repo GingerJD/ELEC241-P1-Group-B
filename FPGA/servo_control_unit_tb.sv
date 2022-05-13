@@ -14,8 +14,8 @@ logic [11:0] atuAngle;
 
 scu u1(Direction, brake, resetOut, pwmDT,pwmPeriod,statusR,inputR,atuAngle);
 initial begin
-inputR = 32'b10000000000011001000000000011100;
-atuAngle = 576;	
+inputR = 32'b10001000000011001000000011111100;
+atuAngle = 0;	
 
 #300 atuAngle = 12'b000000011100;
 //////////////////////////////////////////////////////////////////////////////
