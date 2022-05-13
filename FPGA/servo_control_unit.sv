@@ -59,15 +59,6 @@ always_comb begin
 end
 
 always_latch begin
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//	//decode angle from atu
-//	decodedCurrentAngle = 0;
-//	decodedDesiredAngle = 0;
-//	for (real idx = 256, n = 11; idx >= 0.125; n=n-1, idx = idx/2)begin
-//		decodedCurrentAngle = decodedCurrentAngle + (idx*atuAngle[n]);
-//		decodedDesiredAngle = decodedDesiredAngle + (idx*desiredAngle[n]);
-//	end
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	if(command == 1)
 		resetOut = 1;
 	else if((command == 2)||(command == 3))//No command Defaults to brake
@@ -98,14 +89,14 @@ always_latch begin
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//Bang bang control
 		if (controlMode == 0)begin
-			if (desiredAngle != atuAngle)begin		//MOTOR ON WHEN ANGLE IS NOT CORRECT
-				pwmDT = pwmPeriod;
-			end
-			else if (desiredAngle == atuAngle)begin	//MOTOR OFF WHEN ANGLE IS CORRECT
+			if(desiredAngle == atuAngle)begin //MOTOR OFF WHEN ANGLE IS CORRECT TO 1 DEGREE ACURACY
 				pwmDT = 8'b00000000;
 			end
+			else if (desiredAngle != atuAngle)begin	//MOTOR ON WHEN ANGLE IS NOT CORRECT
+				pwmDT = pwmPeriod;
+			end
 		end
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//proportional control
 		if (controlMode == 1)begin
 			dutyCyclePercentage = 1006/error;
@@ -115,13 +106,8 @@ always_latch begin
 			pwmDT = pwmPeriod/dutyCyclePercentage;				//pwmDT rounded to nearest 20ns
 			if((pwmPeriod-(pwmDT*dutyCyclePercentage))>=(dutyCyclePercentage/2))
 				pwmDT = pwmDT + 1;
-		
-//		dutyCyclePercentage = 1006/error;
-//		pwmDT = pwmPeriod/dutyCyclePercentage;
-//		dutyCyclePercentage = 1006/error;
-//		pwmDT = pwmPeriod / dutyCyclePercentage;//rounded to nearest 20ns for clock_50
 		end
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	end
 end
 endmodule 

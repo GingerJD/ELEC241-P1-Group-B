@@ -14,30 +14,49 @@ logic [11:0] atuAngle;
 
 scu u1(Direction, brake, resetOut, pwmDT,pwmPeriod,statusR,inputR,atuAngle);
 initial begin
-inputR = 32'b10001000000011001000000011111100;
+//Initial Setup for tests
 atuAngle = 0;	
 
-#300 atuAngle = 12'b000000011100;
 //////////////////////////////////////////////////////////////////////////////
-//TEST 1 - Possile to set desired angle
+//TEST 1 - statusR is written correctly
+$display("------------------------------------------------------");
+$display("TEST 1 - Test to see if status register is output correctly");
+atuAngle = 503;
+#1 assert(statusR == 32'b00000000000000000000111110111) $display("PASS - Status register was output correctly"); else $error("FAIL - Desired status register: 00000000000000000000111110111 // Actual status register: %b",statusR);
+atuAngle = 124;
+#1 assert(statusR == 32'b00000000000000000000001111100) $display("PASS - Status register was output correctly"); else $error("FAIL - Desired status register: 00000000000000000000001111100 // Actual status register: %b",statusR);
+//////////////////////////////////////////////////////////////////////////////
+//TEST 2 - Possile to set desired angle - clockwise - bang bang control
+$display("------------------------------------------------------");
+$display("TEST 2 - Test to see if you can set desired angle with bang bang control");
+#100 inputR = 32'b10000000000011001000000011111100;
+#1 assert(Direction==1) $display("PASS - Direction is correct"); else $error("FAIL - Desired direction: 1 // Actual direction: %b",Direction);
+assert(pwmDT==pwmPeriod) $display("PASS - Duty cycle is correct"); else $error("FAIL - Desired duty cycle: %b // Actual duty cycle: %b",pwmPeriod, pwmDT);
+//Simulate motor moving
+repeat(128)begin 
+	#50
+	atuAngle++;
+end
+#1 assert(pwmDT==0) $display("PASS - Motor has stopped at correct angle"); else $error("FAIL - Motor failed to stop at correct angle");
+//TEST 2 - Part 2 - Test for anticlockwise direction after motor has stopped
+$display("New disired angle has been entered");
+inputR = 32'b10000000000011001000000010101000;
+#1 assert(Direction==0) $display("PASS - Direction is correct"); else $error("FAIL - Desired direction: 0 // Actual direction: %b",Direction);
+assert(pwmDT==pwmPeriod) $display("PASS - Duty cycle is correct"); else $error("FAIL - Desired duty cycle: %b // Actual duty cycle: %b",pwmPeriod, pwmDT);
+//simulate motor moving
+repeat(84)begin 
+	#50
+	atuAngle--;
+end
+#1 assert(pwmDT==0) $display("PASS - Motor has stopped at correct angle"); else $error("FAIL - Motor failed to stop at correct angle");
 
 //////////////////////////////////////////////////////////////////////////////
-//TEST 2 - Bang Bang control
-
-//////////////////////////////////////////////////////////////////////////////
-//TEST 3 - Proortional control
-
-//////////////////////////////////////////////////////////////////////////////
-//TEST 4 - inputR is read correctly
-
-//////////////////////////////////////////////////////////////////////////////
-//TEST 5 - statusR is written correctly
+//TEST 3 - Possile to set desired angle - clockwise - proportional control
+$display("------------------------------------------------------");
+$display("TEST 3 - Test to see if you can set desired angle with proportional control");
 
 //////////////////////////////////////////////////////////////////////////////
 //TEST 6 - Current angle is output for DC 
-
-//////////////////////////////////////////////////////////////////////////////
-//TEST 7 - CONTINUOUS COMMAND TEST
 
 //////////////////////////////////////////////////////////////////////////////
 //TEST 8 - RESET COMMAND TEST
