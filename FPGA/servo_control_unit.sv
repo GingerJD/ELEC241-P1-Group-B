@@ -99,13 +99,19 @@ always_latch begin
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//proportional control
 		if (controlMode == 1)begin
-			dutyCyclePercentage = 1006/error;
-			if((1006-(dutyCyclePercentage*error)) >= (error/2))		//Rounded division
-				dutyCyclePercentage = dutyCyclePercentage+1;
-
-			pwmDT = pwmPeriod/dutyCyclePercentage;				//pwmDT rounded to nearest 20ns
-			if((pwmPeriod-(pwmDT*dutyCyclePercentage))>=(dutyCyclePercentage/2))
-				pwmDT = pwmDT + 1;
+			if (atuAngle == desiredAngle)						//Stop motor when motor angle is correct
+				pwmDT = 0;
+			else begin
+				dutyCyclePercentage = 1006/error;
+				if((1006-(dutyCyclePercentage*error)) >= (error/2))		//Rounded division
+					dutyCyclePercentage = dutyCyclePercentage+1;
+	
+				pwmDT = pwmPeriod/dutyCyclePercentage;				//pwmDT rounded to nearest 20ns
+				if((pwmPeriod-(pwmDT*dutyCyclePercentage))>=(dutyCyclePercentage/2))
+					pwmDT = pwmDT + 1;
+				if(pwmDT == 0)	//stops the motor from stopping before it reaches the desired angle
+					pwmDT = 8'b00000001;
+			end
 		end
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	end
