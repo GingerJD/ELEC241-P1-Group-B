@@ -3,20 +3,19 @@ module display_controller (
    output logic rs,
    output logic rw,
    output logic e,
-   input logic [7:0] ascii_data,
-   input logic write,
    input logic clk,
    input logic busyF,
    input logic [11:0] angle);
 
 //Internal Variables
 reg [11:0] updateAngle;
-reg [21:0] refreshCount;
+reg [24:0] refreshCount = 0;
 reg [11:0] degrees;
+
 //BCD CONVERSION
 reg [11:0] BCD;
 //ASCII CONVERSION
-reg [24:0] asciiConversion;
+reg [23:0] asciiConversion;
 
 always @(posedge clk)begin
 	refreshCount++;
@@ -33,49 +32,55 @@ always @(updateAngle)begin
 	//Read busy flag
 	rs = 0;
 	rw = 1;
-	@(negedge busyF)begin
+	if(busyF == 0)begin
 		//clear LCD
-		e = 0;
 		rs = 0;
 		rw = 0;
-		data = 7'b0000001;
+		data = 8'b0000001;
 		e = 1;
+		wait(refreshCount == 2500)
+			e = 0;//wait 50us to toggle e
+		wait(refreshCount == 102500); // wait 2ms
 	end
+	//Write to lcd
 	rs = 0;
-	rw = 1;
-	@(negedge busyF)begin
-		//write hundreds
-		e = 0;
+	rw = 0;
+	if(busyF == 0)begin
 		rs = 1;
 		rw = 0;
-		data = asciiConversion [20:14];
+		data = asciiConversion [23:16];
 		e = 1;
+		wait(refreshCount == 105000)
+			e = 0;//wait 50us to toggle e
+		wait(refreshCount == 107500); //wait 50us
 	end
 	rs = 0;
-	rw = 1;
-	@(negedge busyF)begin
-		//write tens
-		e = 0;
+	rw = 0;
+	if(busyF == 0)begin
 		rs = 1;
 		rw = 0;
-		data = asciiConversion [13:7];
+		data = asciiConversion [15:8];
 		e = 1;
+		wait(refreshCount == 110000)
+			e = 0;//wait 50us to toggle e
+		wait(refreshCount == 112500); //wait 50us
 	end
 	rs = 0;
-	rw = 1;
-	@(negedge busyF)begin
-		//write ones
-		e = 0;
+	rw = 0;
+	if(busyF == 0)begin
 		rs = 1;
 		rw = 0;
-		data = asciiConversion [6:0];
+		data = asciiConversion [7:0];
 		e = 1;
+		wait(refreshCount == 115000)
+			e = 0;//wait 50us to toggle e
+		wait(refreshCount == 117500); //wait 50us
 	end
 end
 
 
 
-always_latch begin
+always_comb begin
 	////////////////////////////////////////////////////////////////////////////////
 	//CONVERT ANGLES TO DEGREES
 	degrees = (updateAngle * 360)/1006;
@@ -90,9 +95,9 @@ always_latch begin
 	
 	////////////////////////////////////////////////////////////////////////////////
 	//CONVERT BCD TO ASCII
-	asciiConversion [20:14] = BCD [11:8] + 48;
-	asciiConversion [13:7] = BCD [7:4] + 48;
-	asciiConversion [6:0] = BCD [3:0] + 48;
+	asciiConversion [23:16] = BCD [11:8] + 48;
+	asciiConversion [15:8] = BCD [7:4] + 48;
+	asciiConversion [7:0] = BCD [3:0] + 48;
 	
 end   
 endmodule

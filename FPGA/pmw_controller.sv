@@ -28,11 +28,6 @@ int updateWait = 0;
 logic [7:0] dutyCycleUpdate;
 logic [7:0] periodUpdate;
 
-//Wait for period to end before updating duty cycle and period
-always @(posedge motor_1 or motor_2)begin
-	dutyCycleUpdate = dutyCycle;
-	periodUpdate = period;
-end
 
 //COUNTER TO DETERMINE WHEN PULSE SHOULD BE HIGH
 always @(posedge clk_50)begin
@@ -42,6 +37,10 @@ always @(posedge clk_50)begin
 		counter = counter +1;
 	else
 		counter = 0;
+	if(counter == 0)begin	//Wait for period to end before updating duty cycle and period
+		dutyCycleUpdate = dutyCycle;
+		periodUpdate = period;
+	end
 end
 
 //IF PERIOD OR DUTY CYCLE UPDATED RESTART COUNTER
