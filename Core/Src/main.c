@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdio.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -41,12 +41,11 @@
 /* Private variables ---------------------------------------------------------*/
  SPI_HandleTypeDef hspi1;
 
-UART_HandleTypeDef huart3;
+UART_HandleTypeDef huart6;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
-
 const uint8_t EEPROM_READ = 0b00000011;
 const uint8_t EEPROM_WRITE = 0b00000010;
 const uint8_t EEPROM_WRDI = 0b00000100;
@@ -57,14 +56,15 @@ const uint8_t EEPROM_WRSR = 0b00000001;
 //GLOBAL FLAGS
 volatile uint8_t spi_xmit_flag = 0;
 volatile uint8_t spi_recv_flag = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
-static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
+static void MX_USART6_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -108,7 +108,7 @@ uint8_t state = 0;
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_SPI1_Init();
-  MX_USART3_UART_Init();
+  MX_USART6_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
 
@@ -117,7 +117,7 @@ uint8_t state = 0;
 
     // Say something
     uart_buf_len = sprintf(uart_buf, "SPI Interrupt Test\r\n");
-    HAL_UART_Transmit(&huart3, (uint8_t *)uart_buf, uart_buf_len, 100);
+    HAL_UART_Transmit(&huart6, (uint8_t *)uart_buf, uart_buf_len, 100);
 
     // Set starting address in EEPROM (arbitrarily set to 5). Note that for the
     // 25AA040A, we can't do sequential writes outside of page (16 bytes)
@@ -150,7 +150,7 @@ uint8_t state = 0;
                              (unsigned int)spi_buf[0],
                              (unsigned int)spi_buf[1],
                              (unsigned int)spi_buf[2]);
-     HAL_UART_Transmit(&huart3, (uint8_t *)uart_buf, uart_buf_len, 100);
+     HAL_UART_Transmit(&huart6, (uint8_t *)uart_buf, uart_buf_len, 100);
 
      // Read status register
      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
@@ -162,7 +162,7 @@ uint8_t state = 0;
      uart_buf_len = sprintf(uart_buf,
                              "Status: 0xx\r\n",
                              (unsigned int)spi_buf[0]);
-     HAL_UART_Transmit(&huart3, (uint8_t *)uart_buf, uart_buf_len, 100);
+     HAL_UART_Transmit(&huart6, (uint8_t *)uart_buf, uart_buf_len, 100);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -271,12 +271,12 @@ uint8_t state = 0;
 	         {
 	           uart_buf_len = sprintf(uart_buf,
 	                                   "0xx ",(unsigned int)spi_buf[i]);
-	           HAL_UART_Transmit(&huart3, (uint8_t *)uart_buf, uart_buf_len, 100);
+	           HAL_UART_Transmit(&huart6, (uint8_t *)uart_buf, uart_buf_len, 100);
 	         }
 
 	         // Print newline
 	         uart_buf_len = sprintf(uart_buf, "\r\n");
-	         HAL_UART_Transmit(&huart3, (uint8_t *)uart_buf, uart_buf_len, 100);
+	         HAL_UART_Transmit(&huart6, (uint8_t *)uart_buf, uart_buf_len, 100);
 
 	         // Wait a few seconds before retransmitting (yes, I know that this is
 	         // blocking--you can make it non-blocking if you wish. I'm lazy.)
@@ -379,35 +379,35 @@ static void MX_SPI1_Init(void)
 }
 
 /**
-  * @brief USART3 Initialization Function
+  * @brief USART6 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_USART3_UART_Init(void)
+static void MX_USART6_UART_Init(void)
 {
 
-  /* USER CODE BEGIN USART3_Init 0 */
+  /* USER CODE BEGIN USART6_Init 0 */
 
-  /* USER CODE END USART3_Init 0 */
+  /* USER CODE END USART6_Init 0 */
 
-  /* USER CODE BEGIN USART3_Init 1 */
+  /* USER CODE BEGIN USART6_Init 1 */
 
-  /* USER CODE END USART3_Init 1 */
-  huart3.Instance = USART3;
-  huart3.Init.BaudRate = 115200;
-  huart3.Init.WordLength = UART_WORDLENGTH_8B;
-  huart3.Init.StopBits = UART_STOPBITS_1;
-  huart3.Init.Parity = UART_PARITY_NONE;
-  huart3.Init.Mode = UART_MODE_TX_RX;
-  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart3) != HAL_OK)
+  /* USER CODE END USART6_Init 1 */
+  huart6.Instance = USART6;
+  huart6.Init.BaudRate = 115200;
+  huart6.Init.WordLength = UART_WORDLENGTH_8B;
+  huart6.Init.StopBits = UART_STOPBITS_1;
+  huart6.Init.Parity = UART_PARITY_NONE;
+  huart6.Init.Mode = UART_MODE_TX_RX;
+  huart6.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart6.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart6) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN USART3_Init 2 */
+  /* USER CODE BEGIN USART6_Init 2 */
 
-  /* USER CODE END USART3_Init 2 */
+  /* USER CODE END USART6_Init 2 */
 
 }
 
@@ -508,6 +508,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
   HAL_GPIO_Init(RMII_TXD1_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : STLK_RX_Pin STLK_TX_Pin */
+  GPIO_InitStruct.Pin = STLK_RX_Pin|STLK_TX_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF7_USART3;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pin : USB_PowerSwitchOn_Pin */
   GPIO_InitStruct.Pin = USB_PowerSwitchOn_Pin;
