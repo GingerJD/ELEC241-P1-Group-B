@@ -6,11 +6,10 @@
 // Description	: A unit used to track the angle of the motor shaft by monitoring 2-wire hall-effect inputs
 //					: DIRECTION = 1 	- CLOCKWISE
 //					: DIRECTION = 0 	- ANTICLOCKWISE
-//					: PM = 1				- PULSE MONITORING ON
-//					: PM = 0 			- PULSE MONITORING OFF
-//					: Q					- Output angle
+//					: PM = 1		- PULSE MONITORING ON
+//					: PM = 0 		- PULSE MONITORING OFF
+//					: Q			- Output angle
 //					: angle = decimal value of Q * (360/1006)
-//					: 
 //					:
 // Limitations	: None
 // 				:
@@ -27,7 +26,7 @@ input logic RESET, PM,DIRECTION,OPTOA,OPTOB);
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-//NEEDS WORK
+//DEBOUNCING PSEUDOCODE FOR OPTOA
 //DEBOUNCE OPTOA//
 //always @(posedge OPTOA)begin
 	//GET current_time_a
@@ -37,7 +36,7 @@ input logic RESET, PM,DIRECTION,OPTOA,OPTOB);
 	//CHANGE ALL OPTOA TO A
 //end
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-//NEEDS WORK
+//DEBOUNCING PSEUDOCODE FOR OPTOB
 //DEBOUNCE OPTOB
 //always @(posedge OPTOB)begin
 	//GET current_time_b
@@ -66,8 +65,6 @@ always_latch begin
 			end
 	end
 end
-
-
 endmodule
 
 

@@ -17,8 +17,6 @@
 // Revision	: Version 1.6 15/04/22
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
 module scu(
 output logic Direction, brake,resetOut,
 output logic [7:0] pwmDT,
@@ -39,9 +37,8 @@ reg [11:0] antiClockDiff;	//Difference between desired angle and current angle i
 reg [11:0] angleDiff;		//Signed difference between desired angle and current angle
 
 //Proportional Controller Variables
-reg [11:0] error;
-reg [11:0] dutyCyclePercentage;
-int remainder;
+reg [11:0] error;		//Difference between current angle and desired angle
+reg [11:0] dutyCyclePercentage;	//Duty cycle % of period
 
 //INPUT REGISTER
 always_comb begin
@@ -59,16 +56,22 @@ always_comb begin
 end
 
 always_latch begin
-	if(command == 1)
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//COMMANDS
+	//RESET COMMAND
+	if(command == 1)			
 		resetOut = 1;
+	//BRAKE COMMAND AND NO COMMAND
 	else if((command == 2)||(command == 3))//No command Defaults to brake
 		brake = 1;
+	//CONTINUOUS COMMAND
 	else if(command ==0)begin
 		//Clear previous commands
 		resetOut = 0;
 		brake = 0;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//Direction Selector
+		//DIRECTION SELECTOR
+		//calculates difference between current angle and desired angle for both clockwise and anticlockwise directions
 		angleDiff = desiredAngle - atuAngle;
 		if(angleDiff[11] == 0)begin
 			clockDiff = angleDiff;
@@ -78,16 +81,17 @@ always_latch begin
 			antiClockDiff = -angleDiff;
 			clockDiff = 1006+angleDiff;
 		end
+		//sets direction accordingly
 		if(clockDiff<=antiClockDiff)begin
 			Direction = 1;
-			error = clockDiff;
+			error = clockDiff;	//error is set for proportional control mode
 		end
 		else if(antiClockDiff < clockDiff)begin
 			Direction =0;
-			error = antiClockDiff;
+			error = antiClockDiff;	//error is set for proportional control mode
 		end
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//Bang bang control
+		//BANG BANG CONTROL
 		if (controlMode == 0)begin
 			if(desiredAngle == atuAngle)begin //MOTOR OFF WHEN ANGLE IS CORRECT TO 1 DEGREE ACURACY
 				pwmDT = 8'b00000000;
@@ -97,7 +101,7 @@ always_latch begin
 			end
 		end
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//proportional control
+		//PROPORTIONAL CONTROL
 		if (controlMode == 1)begin
 			if (atuAngle == desiredAngle)						//Stop motor when motor angle is correct
 				pwmDT = 0;

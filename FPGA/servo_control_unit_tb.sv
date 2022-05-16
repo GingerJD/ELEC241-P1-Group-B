@@ -1,3 +1,21 @@
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Design unit	: servo_control_unit_tb
+// 				:
+// File name	: servo_control_unit_tb.sv
+//					:
+// Description	: Testbench for the SCU
+//					: 
+//					:
+// Limitations	: None
+// 				:
+// Author		: James Davis
+//					: School of Engineering, Computing & Mathematics
+//					: University of Plymouth
+//					: Drake Circus, Plymouth PL4 8AA
+//					: james.davis-11@students.plymouth.ac.uk
+//					:
+// Revision	: Version 1.9 15/04/22
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 module servo_control_unit_tb;
 
 //Set initial variables for servo_control_unit.sv
@@ -123,16 +141,7 @@ inputR = 32'b11101000000011001000000101001111;
 #1 inputR = 32'b10001000000011001000000101001111; 
 #1 assert(brake == 0) $display("PASS - Correctly disabled brake on new command"); else $error("FAIL - SCU did not disable brake on new command");
 #100;
-
-
-
-
-
-
-
-
-
-
+$display("END OF TESTING");
 end
 endmodule
 

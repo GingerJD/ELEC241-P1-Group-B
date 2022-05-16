@@ -1,3 +1,21 @@
+//////////////////////////////////////////////////////////////////
+// Design unit	: display_controller
+// 		:
+// File name	: display_controller.sv
+//		:
+// Description	: A module to output the current motor angle to
+//		: the LCD
+//		:
+// Limitations	: None
+// 		:
+// Author	: James Davis
+//		: School of Engineering, Computing & Mathematics
+//		: University of Plymouth
+//		: Drake Circus, Plymouth PL4 8AA
+//		: james.davis-11@students.plymouth.ac.uk
+//		:
+// Revision	: Version 2.2 14/05/22
+//////////////////////////////////////////////////////////////////
 module display_controller (
    output logic [7:0] data,
    output logic rs,
@@ -12,11 +30,12 @@ reg [11:0] updateAngle;
 reg [24:0] refreshCount = 0;
 reg [11:0] degrees;
 
-//BCD CONVERSION
+//BCD CONVERSION VARIABLES
 reg [11:0] BCD;
-//ASCII CONVERSION
+//ASCII CONVERSION VARIABLES
 reg [23:0] asciiConversion;
 
+//FIXED RATE SCREEN REFRESH
 always @(posedge clk)begin
 	refreshCount++;
 	if (refreshCount == 16666667)begin	//Read angle at 60Hz
@@ -48,7 +67,7 @@ always @(updateAngle)begin
 	if(busyF == 0)begin
 		rs = 1;
 		rw = 0;
-		data = asciiConversion [23:16];
+		data = asciiConversion [23:16];	//put ascii character to data lines
 		e = 1;
 		wait(refreshCount == 105000)
 			e = 0;//wait 50us to toggle e
@@ -59,7 +78,7 @@ always @(updateAngle)begin
 	if(busyF == 0)begin
 		rs = 1;
 		rw = 0;
-		data = asciiConversion [15:8];
+		data = asciiConversion [15:8];	//put ascii character to data lines
 		e = 1;
 		wait(refreshCount == 110000)
 			e = 0;//wait 50us to toggle e
@@ -70,7 +89,7 @@ always @(updateAngle)begin
 	if(busyF == 0)begin
 		rs = 1;
 		rw = 0;
-		data = asciiConversion [7:0];
+		data = asciiConversion [7:0];	//put ascii character to data lines
 		e = 1;
 		wait(refreshCount == 115000)
 			e = 0;//wait 50us to toggle e

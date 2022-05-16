@@ -22,7 +22,7 @@
 //		: Drake Circus, Plymouth PL4 8AA
 //		: james.davis-11@students.plymouth.ac.uk
 //		:
-// Revision	: Version 1.8 08/05/22
+// Revision	: Version 1.9 15/05/22
 //////////////////////////////////////////////////////////////////
 
 module pwm_controller_tb;
@@ -39,13 +39,12 @@ pwmc u1(motor_1, motor_2, clk_50, direction,pwmOutEnable, brake, dutyCycle, peri
 initial
 begin
 	clk_50 = 1;		
-	repeat(32) begin
+	repeat(300) begin
 		#100;	//for testing purposes using picoseconds instead of nanoseconds
 		clk_50 = ~clk_50;
 	end
 end
 
-//TESTING
 initial
 begin
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -68,42 +67,62 @@ begin
 	$display("TEST 1 - Test that the pwm is correctly working");
 	$display("-----------------------------------------------");
 	#151 assert((motor_2 == 1)&&(motor_1 == 0)) $display("PASS - Motor enabled correctly - Direction is correct"); else $error("FAIL - motor_1 = %b - motor_2 = %b",motor_1, motor_2);
-	#1000 assert((motor_2 == 0)&&(motor_1 == 0)) $display("PASS - Motor disabled correctly"); else $error("FAIL - motor_1 = %b - motor_2 = %b",motor_1, motor_2);
-	#600 assert((motor_2 == 1)&&(motor_1 == 0)) $display("PASS - Motor re-enabled correctly - Direction is correct"); else $error("FAIL - motor_1 = %b - motor_2 = %b",motor_1, motor_2);
+	#999 assert((motor_2 == 1)&&(motor_1 == 0)) $display("PASS - Duty cycle is correct"); else $error("FAIL - Duty cycle is incorrect");
+	#1 assert((motor_2 == 0)&&(motor_1 == 0)) $display("PASS - Motor disabled correctly"); else $error("FAIL - motor_1 = %b - motor_2 = %b",motor_1, motor_2);
+	#599 assert((motor_2 == 0)&&(motor_1 == 0)) $display("PASS - Period is correct"); else $error("FAIL - Period is incorrect");
+	#1 assert((motor_2 == 1)&&(motor_1 == 0)) $display("PASS - Motor re-enabled correctly - Direction is correct"); else $error("FAIL - motor_1 = %b - motor_2 = %b",motor_1, motor_2);
 	
 /////////////////////////////////////////////////////////////////////////////////////////
 	//TEST 2 - test that pwm is correctly working at different duty cycle and period
 	$display("----------------------------------------------------------------------------------");
 	$display("TEST 2 - Test that the pwm is correctly working at different period and duty cycle");
+	$display("The duty cycle must only update when it has finished the previously input period");
 	$display("----------------------------------------------------------------------------------");
 	//Period = 100ns / Duty cycle = 60ns
-	#100 period = 8'b00000101;
+	#250 period = 8'b00000101;
 	dutyCycle = 8'b00000011;
-	#100 assert((motor_2 == 1)&&(motor_1 == 0)) $display("PASS - Motor enabled correctly - Direction is correct"); else $error("FAIL - motor_1 = %b - motor_2 = %b",motor_1, motor_2);
-	#600 assert((motor_2 == 0)&&(motor_1 == 0)) $display("PASS - Motor disabled correctly"); else $error("FAIL - motor_1 = %b - motor_2 = %b",motor_1, motor_2);
-	#400 assert((motor_2 == 1)&&(motor_1 == 0)) $display("PASS - Motor re-enabled correctly - Direction is correct"); else $error("FAIL - motor_1 = %b - motor_2 = %b",motor_1, motor_2);
-/////////////////////////////////////////////////////////////////////////////////////////
+	$display("New duty cycle and period have been input");
+	//Testing that previous period finishes before updating period and duty cycle
+	#749 assert((motor_2 == 1)&&(motor_1 == 0)) $display("PASS - Previously input duty cycle is correct"); else $error("FAIL - Previously input duty cycle is incorrect");
+	#1 assert((motor_2 == 0)&&(motor_1 == 0)) $display("PASS - Motor disabled correctly"); else $error("FAIL - motor_1 = %b - motor_2 = %b",motor_1, motor_2);
+	#599 assert((motor_2 == 0)&&(motor_1 == 0)) $display("PASS - Previously input period is correct"); else $error("FAIL - Previously input period is incorrect");
+	#1 assert((motor_2 == 1)&&(motor_1 == 0)) $display("PASS - Motor re-enabled correctly - Direction is correct"); else $error("FAIL - motor_1 = %b - motor_2 = %b",motor_1, motor_2);
+	//Testing udated duty cycle and period
+	$display(" "); //gap to make testbench output clearer
+	#599 assert((motor_2 == 1)&&(motor_1 == 0)) $display("PASS - New input duty cycle is correct"); else $error("FAIL - Previously input duty cycle is incorrect");
+	#1 assert((motor_2 == 0)&&(motor_1 == 0)) $display("PASS - Motor disabled correctly"); else $error("FAIL - motor_1 = %b - motor_2 = %b",motor_1, motor_2);
+	#399 assert((motor_2 == 0)&&(motor_1 == 0)) $display("PASS - New input period is correct"); else $error("FAIL - Previously input period is incorrect");
+	////////////////////////////////////////////////////////////////////////////////////////////
 	//TEST 3 - test that the pwm controller can run anti-clockwise
 	$display("----------------------------------------------------------------------------------");
 	$display("TEST 3 - Test that the pwm controller can run anti-clockwise");
 	$display("----------------------------------------------------------------------------------");
 	//Set direction to anti-clockwise
-	#50 direction = 0;
+	direction = 0; //Changing direction for TEST 3
 	#1 assert((motor_2 == 0)&&(motor_1 == 1)) $display("PASS - Motor changed direction correctly"); else $error("FAIL - motor_1 = %b - motor_2 = %b",motor_1, motor_2);
 /////////////////////////////////////////////////////////////////////////////////////////
-	//TEST 4 - test that the brake function works correctly - regardless of clock
+	//TEST 4 - test that the brake function works correctly
 	$display("----------------------------------------------------------------------------------");
-	$display("TEST 4 - Test that the brake function works correctly - regardless of clock");
+	$display("TEST 4 - Test that the brake function works correctly");
 	$display("----------------------------------------------------------------------------------");
 	#50 brake = 1;
-	#1 assert((motor_2 == 1)&&(motor_1 == 1)) $display("PASS - Motor braked correctly"); else $error("FAIL - motor_1 = %b - motor_2 = %b",motor_1, motor_2);
+	#150 assert((motor_2 == 1)&&(motor_1 == 1)) $display("PASS - Motor braked correctly"); else $error("FAIL - motor_1 = %b - motor_2 = %b",motor_1, motor_2);
 	#10 brake = 0;
 /////////////////////////////////////////////////////////////////////////////////////////
 	//TEST 5 - test that the pwm outputs can be toggled on and off
 	$display("----------------------------------------------------------------------------------");
 	$display("TEST 5 - Test that the pwm outputs can be toggled on and off");
 	$display("----------------------------------------------------------------------------------");
-	#50 pwmOutEnable = 0;
-	#1 assert((motor_2 == 0)&&(motor_1 == 0)) $display("PASS - All PWM outputs were pulled low"); else $error("FAIL - motor_1 = %b - motor_2 = %b",motor_1, motor_2);
+	#100 pwmOutEnable = 0;
+	#90 assert((motor_2 == 0)&&(motor_1 == 0)) $display("PASS - All PWM outputs were pulled low"); else $error("FAIL - motor_1 = %b - motor_2 = %b",motor_1, motor_2);
+/////////////////////////////////////////////////////////////////////////////////////////
+	//TEST 6 - test that brake overrides the PWM output being toggled low
+	$display("----------------------------------------------------------------------------------");
+	$display("TEST 6 - Test that brake overrides the PWM output being toggled low");
+	$display("----------------------------------------------------------------------------------");
+	#1 brake = 1;
+	#199 assert((motor_2 == 1)&&(motor_1 == 1)) $display("PASS - Motor braked correctly"); else $error("FAIL - motor_1 = %b - motor_2 = %b",motor_1, motor_2);
+	$display("----------------------------------------------------------------------------------");
+	$display("END OF TESTING");
 end
 endmodule
