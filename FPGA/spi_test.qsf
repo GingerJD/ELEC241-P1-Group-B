@@ -103,6 +103,7 @@ set_location_assignment PIN_F13 -to DEBUG_PIN_1
 set_location_assignment PIN_T15 -to DEBUG_PIN_2
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to OPTOA
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to OPTOB
+set_global_assignment -name SYSTEMVERILOG_FILE display_controller.sv
 set_global_assignment -name SYSTEMVERILOG_FILE test_input_reg.sv
 set_global_assignment -name SYSTEMVERILOG_FILE servo_control_unit.sv
 set_global_assignment -name SYSTEMVERILOG_FILE pmw_controller.sv

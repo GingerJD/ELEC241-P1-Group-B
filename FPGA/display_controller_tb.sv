@@ -24,11 +24,10 @@ logic rs;
 logic rw;
 logic e;
 logic clk;
-logic busyF;
 logic [11:0] angle;
 
 //Initialize display_controller.sv
-display_controller u1(data, rs, rw, e, clk, busyF, angle);
+display_controller u1(data, rs, rw, e, clk, angle);
 
 
 //Simulates clock input
@@ -44,7 +43,6 @@ end
 
 initial begin
 angle = 503;
-busyF = 0;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //TEST 1 - Test to see that the angle is being read at fixed rate
 $display("WARNING - Due to the DC being very timing dependant this testbench requires 668,966,680ps of simulation");
